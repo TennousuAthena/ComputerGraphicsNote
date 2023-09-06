@@ -1,5 +1,6 @@
 import tkinter as tk
 import numpy as np
+import random
 
 def get_hex_code(pixel: np.ndarray):
     return f'#{pixel[0]:02x}{pixel[1]:02x}{pixel[2]:02x}'
@@ -28,6 +29,7 @@ class Pixel:
 class Screen:
     heightPerPixel = 10
     widthPerPixel = 10
+    showDebugInfo = True
 
     def __init__(self, windowWidth, windowHeight, fullscreen=False):
         self.windowHeight = windowHeight
@@ -41,7 +43,16 @@ class Screen:
         self.__window.title("myScreen")
         if fullscreen:
             self.__window.attributes('-fullscreen', True)
+        if self.showDebugInfo:
+            self.add_debug_info(f"""Debug mod is on
+heightPerPixel={self.heightPerPixel}\nwidthPerPixel={self.widthPerPixel}
+vscreenWidth={self.screenWidth}\nvscreenHeight={self.screenHeight}\n""",)
         self.recreate_pixel_matrix()
+
+    def add_debug_info(self, info_text):
+        # 创建一个文本框来显示调试信息
+        debug_label = tk.Label(self.__window, text=info_text, bg='gray', fg='white', anchor='ne', padx=100, pady=20)
+        debug_label.place(relx=1, rely=0, anchor='ne')
 
     def recreate_pixel_matrix(self):
         for x in range(self.screenWidth):
@@ -56,7 +67,10 @@ class Screen:
         for x in range(self.screenWidth):
             for y in range(self.screenHeight):
                 pixel = self.pixel_matrix[x, y]
-                color = get_hex_code(pixel)
+                if pixel.__class__.__name__ == "Pixel":
+                    color = pixel.hex
+                else:
+                    color = get_hex_code(pixel)
                 x1, y1 = x * 10, y * 10
                 x2, y2 = x1 + 10, y1 + 10
                 self.__canvas.create_rectangle(x1, y1, x2, y2, fill=color)
@@ -111,10 +125,8 @@ class Line(StaticGraphic):
         for i in range(len(self.x)):
             self.dataArray[self.x[i], self.y[i]] = np.array([self.color.R, self.color.G, self.color.B], dtype=np.uint8)
 
-
 if __name__ == "__main__":
     myScreen = Screen(1920, 1080, True)
-
-    myLine = Line(k=0.5, b=10)  # 创建一条直线
-    myScreen.draw_static_content(myLine)  # 绘制直线数据到屏幕
+    myLine = Line(k=random.randint(1,100)/random.randint(1,100), b=random.randint(1,100))  # 创建一条直线
+    myScreen.draw_static_content(myLine)
     myScreen.show()
